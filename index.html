@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Movie Library</title>
+<style>
+  :root{
+    --bg:#0d0f16; --surface:#171a24; --surface2:#1f2330;
+    --gold:#e8b93c; --gold-dim:#8a6f22;
+    --ok:#4caf6d; --wait:#d9534f; --soon:#4a8fd9;
+    --text:#f2f0e8; --muted:#8a8f9c; --rule:#2b3040;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Georgia,serif;min-height:100vh;}
+  .wrap{max-width:640px;margin:0 auto;padding-bottom:60px;}
+  header{padding:24px 20px 16px;text-align:center;border-bottom:2px solid var(--rule);}
+  h1{font-family:'Impact','Arial Black',sans-serif;letter-spacing:2px;color:var(--gold);
+     text-transform:uppercase;font-size:22px;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:12px;letter-spacing:1px;}
+  main{padding:20px;}
+  .lock{padding:60px 20px;text-align:center;}
+  .lock p{color:var(--muted);font-size:13px;margin-bottom:16px;}
+  input,textarea,select{
+    width:100%;padding:13px;background:var(--surface);border:1px solid var(--rule);
+    color:var(--text);border-radius:8px;font-size:15px;font-family:Georgia,serif;margin-bottom:10px;
+  }
+  textarea{resize:vertical;min-height:70px;}
+  input::placeholder,textarea::placeholder{color:var(--muted);}
+  .btn{width:100%;padding:13px;background:var(--gold);color:#20180a;border:none;border-radius:8px;
+       font-weight:bold;font-size:14px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:4px;}
+  .btn.secondary{background:transparent;color:var(--gold);border:1px solid var(--gold-dim);}
+  .btn.danger{background:transparent;color:var(--wait);border:1px solid var(--wait);}
+  .btn.small{width:auto;padding:8px 14px;font-size:11px;}
+  .tabs{display:flex;border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:20px;flex-wrap:wrap;}
+  .tabs button{flex:1;min-width:80px;padding:10px 4px;background:var(--surface);color:var(--muted);
+               border:none;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;font-family:inherit;}
+  .tabs button.active{background:var(--gold);color:#20180a;font-weight:bold;}
+  .section{display:none;}
+  .section.active{display:block;}
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .card-title{font-size:16px;font-weight:bold;}
+  .card-meta{color:var(--muted);font-size:12px;margin-top:4px;}
+  .card-desc{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.4;}
+  .stamp{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;border-radius:999px;
+         font-family:Arial,sans-serif;font-weight:bold;border:2px solid;white-space:nowrap;}
+  .stamp.ipo{color:var(--ok);border-color:var(--ok);}
+  .stamp.bado{color:var(--wait);border-color:var(--wait);}
+  .stamp.inakuja{color:var(--soon);border-color:var(--soon);}
+  .card-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .thumb{width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-bottom:10px;}
+  .form-box{background:var(--surface2);border:1px solid var(--rule);border-radius:10px;padding:16px;margin-bottom:20px;}
+  label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;}
+  .msg{text-align:center;font-size:12px;color:var(--wait);margin-top:8px;min-height:16px;}
+  .count{color:var(--muted);font-size:12px;margin-bottom:12px;letter-spacing:1px;}
+  .cat-pill{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--rule);
+            border-radius:999px;padding:8px 14px;margin:4px;font-size:13px;}
+  .cat-pill.disabled{opacity:0.4;}
+  .toggle-mini{cursor:pointer;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--gold-dim);color:var(--gold);}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:13px;}
+  .logout-bar{text-align:right;padding:0 20px;margin-top:-8px;}
+  .logout-bar button{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;}
+  .chat-bubble{max-width:78%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.4;}
+  .chat-bubble.user{align-self:flex-start;background:var(--surface2);border:1px solid var(--rule);border-bottom-left-radius:2px;}
+  .chat-bubble.admin{align-self:flex-end;background:var(--gold);color:#20180a;border-bottom-right-radius:2px;}
+  .thread-item{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px 14px;
+    margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .thread-item:active{background:var(--surface2);}
+  .thread-name{font-weight:bold;font-size:14px;}
+  .thread-last{color:var(--muted);font-size:12px;margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
+  .comments-admin-toggle{background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;
+    margin-top:10px;text-decoration:underline;padding:0;}
+  .comments-admin-section{display:none;margin-top:10px;border-top:1px solid var(--rule);padding-top:10px;}
+  .comments-admin-section.open{display:block;}
+  .comment-admin-item{background:var(--surface2);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .comment-admin-item.admin-reply{border-left:3px solid var(--gold);}
+  .comment-admin-item .c-author{font-weight:bold;color:var(--gold);font-size:11px;display:block;}
+  .comment-reply-row{display:flex;gap:6px;margin-top:8px;}
+  .comment-reply-row input{margin-bottom:0;flex:1;padding:9px;font-size:13px;}
+  .comment-reply-row button{width:auto;padding:9px 12px;font-size:12px;}
+  .profile-thumb{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Admin Dashboard</h1>
+    <div class="sub">Movie Library &mdash; Usimamizi</div>
+  </header>
+
+  <div id="lockScreen" class="lock">
+    <p>Ingia kwa akaunti ya Admin</p>
+    <input type="email" id="loginEmail" placeholder="Barua pepe">
+    <input type="password" id="loginPass" placeholder="Password">
+    <button class="btn" id="loginBtn">Ingia</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div id="app" style="display:none;">
+    <div class="logout-bar"><button id="logoutBtn">Toka &rarr;</button></div>
+    <main>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="movies">Movies</button>
+        <button class="tab-btn" data-tab="products">Bidhaa</button>
+        <button class="tab-btn" data-tab="categories">Category</button>
+        <button class="tab-btn" data-tab="branches">Ofisi</button>
+        <button class="tab-btn" data-tab="ads">Matangazo</button>
+        <button class="tab-btn" data-tab="chat">Chat</button>
+        <button class="tab-btn" data-tab="users">Wateja</button>
+      </div>
+
+      <!-- MOVIES TAB -->
+      <div class="section active" id="tab-movies">
+        <div class="form-box" style="border-color:var(--gold-dim);">
+          <label>Ongeza Movie Nyingi kwa Wakati Mmoja (Bulk Paste)</label>
+          <textarea id="mBulkTitles" placeholder="Bandika majina, moja kwa mstari, mfano:&#10;Fast X&#10;Kichekesho Episode 5&#10;Vipuli vya Mapenzi" style="min-height:100px;"></textarea>
+          <label>Category kwa zote (utahariri moja moja baadaye ukitaka)</label>
+          <select id="mBulkCategory"></select>
+          <label>Ofisi kwa zote</label>
+          <select id="mBulkBranch"></select>
+          <button class="btn secondary" id="mBulkAddBtn">Ongeza Zote (Bila Picha/Trailer)</button>
+          <p style="color:var(--muted);font-size:11px;margin-top:6px;">
+            Zitaongezwa zote kwa Hali "Ipo", bila picha wala trailer. Unaweza kuongeza picha/trailer/kubadilisha
+            category baadaye kwa kila moja kwenye orodha chini.
+          </p>
+        </div>
+        <div class="form-box">
+          <label>Jina la Movie</label>
+          <input type="text" id="mTitle" placeholder="mfano: Fast X">
+          <label>Category</label>
+          <select id="mCategory"></select>
+          <label>Ofisi</label>
+          <select id="mBranch"></select>
+          <label>Hali</label>
+          <select id="mStatus">
+            <option value="ipo">Ipo</option>
+            <option value="inakuja">Inakuja</option>
+            <option value="bado">Bado</option>
+          </select>
+          <label>Maelezo (yatakayovutia wateja)</label>
+          <textarea id="mDesc" placeholder="mfano: Filamu ya aksheni yenye mzunguko wa magari..."></textarea>
+          <label>Picha ya Movie</label>
+          <input type="file" id="mImage" accept="image/*">
+          <label>Link ya Trailer (YouTube - Unlisted)</label>
+          <input type="text" id="mTrailer" placeholder="mfano: https://youtube.com/watch?v=ABC123XYZ">
+          <button class="btn" id="mAddBtn">Ongeza Movie</button>
+        </div>
+        <div class="count" id="movieCount"></div>
+        <div id="movieList"></div>
+      </div>
+
+      <!-- PRODUCTS TAB -->
+      <div class="section" id="tab-products">
+        <div class="form-box">
+          <label>Jina la Bidhaa</label>
+          <input type="text" id="pName" placeholder="mfano: Flash 32GB">
+          <label>Bei (TZS)</label>
+          <input type="number" id="pPrice" placeholder="mfano: 15000">
+          <label>Maelezo</label>
+          <textarea id="pDesc" placeholder="Maelezo mafupi ya bidhaa"></textarea>
+          <label>Picha ya Bidhaa</label>
+          <input type="file" id="pImage" accept="image/*">
+          <button class="btn" id="pAddBtn">Ongeza Bidhaa</button>
+        </div>
+        <div class="count" id="productCount"></div>
+        <div id="productList"></div>
+      </div>
+
+      <!-- CATEGORIES TAB -->
+      <div class="section" id="tab-categories">
+        <div class="form-box">
+          <label>Ongeza Category Mpya</label>
+          <input type="text" id="catName" placeholder="mfano: Kids Movies">
+          <button class="btn" id="catAddBtn">Ongeza Category</button>
+        </div>
+        <div id="catList"></div>
+        <p style="color:var(--muted);font-size:12px;margin-top:12px;">
+          Ukifungia (Disable) category, wateja hawataiona kabisa kwenye User App.
+        </p>
+      </div>
+
+      <!-- BRANCHES (OFISI) TAB -->
+      <div class="section" id="tab-branches">
+        <div class="form-box">
+          <label>Ongeza Ofisi Mpya</label>
+          <input type="text" id="branchName" placeholder="mfano: Kiborloni">
+          <button class="btn" id="branchAddBtn">Ongeza Ofisi</button>
+        </div>
+        <div id="branchList"></div>
+        <p style="color:var(--muted);font-size:12px;margin-top:12px;">
+          Ofisi mpya inaanza ikiwa <b>Imefungwa</b> (haitaonekana kwa wateja) mpaka uifungue (Fungua) hapa.
+          Movie zote lazima ziwe na Ofisi. Ukifungia Ofisi, wateja wa Ofisi hiyo hawataona movie zake.
+        </p>
+      </div>
+
+      <!-- ADS TAB -->
+      <div class="section" id="tab-ads">
+        <div class="form-box">
+          <label>Tangazo la Picha</label>
+          <input type="file" id="adImage" accept="image/*">
+          <input type="text" id="adImageCaption" placeholder="Maandishi mafupi ya tangazo (hiari)">
+          <button class="btn" id="adImageBtn">Chapisha Tangazo la Picha</button>
+        </div>
+        <div class="form-box">
+          <label>Tangazo la Maandishi</label>
+          <textarea id="adText" placeholder="mfano: Ofa maalum wiki hii! Nunua flash 32GB kwa bei ya..."></textarea>
+          <button class="btn" id="adTextBtn">Chapisha Tangazo la Maandishi</button>
+        </div>
+        <div class="form-box" style="border-color:var(--wait);">
+          <label style="color:var(--wait);">Tangazo la Dharura (linaonekana kwa nyekundu, juu kabisa)</label>
+          <textarea id="adEmergency" placeholder="mfano: Leo Jumatatu ofisi imefungwa kwa sababu za dharura, samahani kwa usumbufu."></textarea>
+          <button class="btn" id="adEmergencyBtn" style="background:var(--wait);color:#fff;">Chapisha Tangazo la Dharura</button>
+        </div>
+        <div class="count" id="adCount"></div>
+        <div id="adList"></div>
+      </div>
+
+      <!-- CHAT TAB -->
+      <div class="section" id="tab-chat">
+        <div id="chatThreadsList"></div>
+        <div id="chatConversation" style="display:none;">
+          <button class="btn small secondary" id="chatBackBtn" style="width:auto;margin-bottom:10px;">&larr; Rudi kwenye Orodha</button>
+          <div id="chatConvName" style="font-weight:bold;margin-bottom:10px;"></div>
+          <div id="chatConvMessages" class="chat-messages" style="height:45vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="chatConvInput" placeholder="Jibu mteja..." style="margin-bottom:0;flex:1;">
+            <button class="btn small" id="chatConvSendBtn" style="width:auto;">Tuma</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS TAB -->
+      <div class="section" id="tab-users">
+        <div class="count" id="userCount"></div>
+        <div id="userAdminList"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, setDoc,
+  onSnapshot, query, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// ============================================
+// CONFIG - IMEUNGANISHWA MOJA KWA MOJA (hakuna faili nyingine inayohitajika)
+// ============================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAc9-UB8dja2Bf0PYL72wDI3sOC7eL_02o",
+  authDomain: "reelzone-muvies.firebaseapp.com",
+  projectId: "reelzone-muvies",
+  storageBucket: "reelzone-muvies.firebasestorage.app",
+  messagingSenderId: "930079836592",
+  appId: "1:930079836592:web:25ce8aa2d4d464c3522e75"
+};
+const ADMIN_EMAIL = "mycokavishe@gmail.com";
+const IMGBB_API_KEY = "eabab407ec137007c21922ef7abe9f98";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+async function compressImage(file, maxWidth = 1000, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => { img.src = e.target.result; };
+    reader.onerror = reject;
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadToCloudinary(file) {
+  let toSend = file;
+  try {
+    toSend = await compressImage(file);
+  } catch (e) {
+    toSend = file; // kama compression itashindikana, tuma picha ya awali
+  }
+  const url = `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`;
+  const formData = new FormData();
+  formData.append('image', toSend);
+  const res = await fetch(url, { method: 'POST', body: formData });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data || !data.success) {
+    const detail = data && data.error && data.error.message ? data.error.message : ('HTTP ' + res.status);
+    throw new Error('ImgBB: ' + detail);
+  }
+  return data.data.url;
+}
+
+let categories = [];
+
+// ---- AUTH ----
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const msg = document.getElementById('loginMsg');
+  if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    msg.textContent = "Barua pepe hii si ya Admin.";
+    return;
+  }
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) {
+    msg.textContent = "Imeshindikana kuingia: " + e.message;
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, (user) => {
+  if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initListeners();
+  } else {
+    document.getElementById('lockScreen').style.display = 'block';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+// ---- TABS ----
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+let listenersInitialized = false;
+function initListeners() {
+  if (listenersInitialized) return;
+  listenersInitialized = true;
+  listenCategories();
+  listenBranches();
+  listenMovies();
+  listenProducts();
+  listenUsers();
+  listenAds();
+  listenChatThreads();
+}
+
+// ---- BRANCHES (OFISI) ----
+let branches = [];
+
+function listenBranches() {
+  const q = query(collection(db, 'branches'), orderBy('name'));
+  onSnapshot(q, (snap) => {
+    branches = [];
+    snap.forEach(d => branches.push({ id: d.id, ...d.data() }));
+    renderBranchSelect();
+    renderBranchList();
+  });
+}
+
+function renderBranchSelect() {
+  const opts = branches.length
+    ? branches.map(b => `<option value="${b.id}">${escapeHtml(b.name)}</option>`).join('')
+    : '<option value="">-- Ongeza ofisi kwanza --</option>';
+  const sel = document.getElementById('mBranch');
+  if (sel) sel.innerHTML = opts;
+  const bulkSel = document.getElementById('mBulkBranch');
+  if (bulkSel) bulkSel.innerHTML = opts;
+}
+
+function renderBranchList() {
+  const list = document.getElementById('branchList');
+  if (branches.length === 0) {
+    list.innerHTML = '<div class="empty">Bado hakuna ofisi. Ongeza moja juu.</div>';
+    return;
+  }
+  list.innerHTML = branches.map(b => `
+    <span class="cat-pill ${b.enabled !== true ? 'disabled' : ''}">
+      ${escapeHtml(b.name)}
+      <span class="toggle-mini" onclick="toggleBranch('${b.id}', ${b.enabled !== true})">
+        ${b.enabled !== true ? 'Fungua' : 'Funga'}
+      </span>
+      <span class="toggle-mini" style="border-color:var(--wait);color:var(--wait);" onclick="deleteBranch('${b.id}')">Futa</span>
+    </span>
+  `).join('');
+}
+
+document.getElementById('branchAddBtn').addEventListener('click', async () => {
+  const nameEl = document.getElementById('branchName');
+  const name = nameEl.value.trim();
+  if (!name) return;
+  const exists = branches.some(b => b.name.trim().toLowerCase() === name.toLowerCase());
+  if (exists) {
+    alert('Ofisi yenye jina hili tayari ipo.');
+    return;
+  }
+  await addDoc(collection(db, 'branches'), { name, enabled: false, createdAt: serverTimestamp() });
+  nameEl.value = '';
+  alert('Ofisi "' + name + '" imeongezwa. Ikumbuke kuwa bado imefungwa - "Fungua" ili wateja waione.');
+});
+
+window.toggleBranch = async (id, enable) => {
+  await updateDoc(doc(db, 'branches', id), { enabled: enable });
+};
+
+window.deleteBranch = async (id) => {
+  if (!confirm('Futa ofisi hii? Movie zilizopo ndani yake hazitafutwa lakini hazitaonekana.')) return;
+  await deleteDoc(doc(db, 'branches', id));
+};
+
+function branchName(id) {
+  const b = branches.find(x => x.id === id);
+  return b ? b.name : 'Bila Ofisi';
+}
+
+// ---- CATEGORIES ----
+function listenCategories() {
+  const q = query(collection(db, 'categories'), orderBy('name'));
+  onSnapshot(q, (snap) => {
+    categories = [];
+    snap.forEach(d => categories.push({ id: d.id, ...d.data() }));
+    renderCategorySelect();
+    renderCategoryList();
+  });
+}
+
+function renderCategorySelect() {
+  const sel = document.getElementById('mCategory');
+  sel.innerHTML = categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  const bulkSel = document.getElementById('mBulkCategory');
+  if (bulkSel) bulkSel.innerHTML = categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+}
+
+function renderCategoryList() {
+  const list = document.getElementById('catList');
+  if (categories.length === 0) {
+    list.innerHTML = '<div class="empty">Bado hakuna category. Ongeza moja juu.</div>';
+    return;
+  }
+  list.innerHTML = categories.map(c => `
+    <span class="cat-pill ${c.enabled === false ? 'disabled' : ''}">
+      ${escapeHtml(c.name)}
+      <span class="toggle-mini" onclick="toggleCategory('${c.id}', ${c.enabled === false})">
+        ${c.enabled === false ? 'Fungua' : 'Funga'}
+      </span>
+      <span class="toggle-mini" style="border-color:var(--wait);color:var(--wait);" onclick="deleteCategory('${c.id}')">Futa</span>
+    </span>
+  `).join('');
+}
+
+document.getElementById('catAddBtn').addEventListener('click', async () => {
+  const nameEl = document.getElementById('catName');
+  const name = nameEl.value.trim();
+  if (!name) return;
+  const exists = categories.some(c => c.name.trim().toLowerCase() === name.toLowerCase());
+  if (exists) {
+    alert('Category yenye jina hili tayari ipo.');
+    return;
+  }
+  await addDoc(collection(db, 'categories'), { name, enabled: true, createdAt: serverTimestamp() });
+  nameEl.value = '';
+});
+
+window.toggleCategory = async (id, enable) => {
+  await updateDoc(doc(db, 'categories', id), { enabled: enable });
+};
+
+window.deleteCategory = async (id) => {
+  if (!confirm('Futa category hii? Movie zilizopo ndani yake hazitafutwa lakini hazitaonekana.')) return;
+  await deleteDoc(doc(db, 'categories', id));
+};
+
+// ---- MOVIES ----
+let latestMovies = [];
+let openAdminComments = {};
+let adminCommentUnsub = {};
+
+function listenMovies() {
+  const q = query(collection(db, 'movies'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snap) => {
+    latestMovies = [];
+    snap.forEach(d => latestMovies.push({ id: d.id, ...d.data() }));
+    renderMovies(latestMovies);
+  });
+}
+
+function catName(id) {
+  const c = categories.find(x => x.id === id);
+  return c ? c.name : 'Bila Category';
+}
+
+function statusLabel(s) {
+  if (s === 'ipo') return { text: 'IPO', cls: 'ipo' };
+  if (s === 'bado') return { text: 'BADO', cls: 'bado' };
+  return { text: 'INAKUJA', cls: 'inakuja' };
+}
+
+function renderMovies(movies) {
+  document.getElementById('movieCount').textContent = movies.length + ' MOVIE KWENYE MFUMO';
+  const list = document.getElementById('movieList');
+  if (movies.length === 0) {
+    list.innerHTML = '<div class="empty">Bado hujaongeza movie yoyote.</div>';
+    return;
+  }
+  list.innerHTML = movies.map(m => {
+    const s = statusLabel(m.status);
+    return `<div class="card">
+      ${m.imageUrl ? `<img class="thumb" src="${m.imageUrl}">` : ''}
+      <div class="card-top">
+        <div>
+          <div class="card-title">${escapeHtml(m.title)}</div>
+          <div class="card-meta">${escapeHtml(catName(m.category))} &middot; ${escapeHtml(branchName(m.branch))} &middot; ${m.likes || 0} likes ${m.trailerId ? '&middot; \ud83c\udfa5 Trailer ipo' : ''}</div>
+        </div>
+        <span class="stamp ${s.cls}">${s.text}</span>
+      </div>
+      ${m.description ? `<div class="card-desc">${escapeHtml(m.description)}</div>` : ''}
+      <div class="card-actions">
+        <select class="btn small secondary" style="width:auto;" onchange="updateMovieStatus('${m.id}', this.value)">
+          <option value="ipo" ${m.status === 'ipo' ? 'selected' : ''}>Ipo</option>
+          <option value="inakuja" ${m.status === 'inakuja' ? 'selected' : ''}>Inakuja</option>
+          <option value="bado" ${m.status === 'bado' ? 'selected' : ''}>Bado</option>
+        </select>
+        <select class="btn small secondary" style="width:auto;" onchange="updateMovieCategory('${m.id}', this.value)">
+          ${categories.map(c => `<option value="${c.id}" ${m.category === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+        </select>
+        <select class="btn small secondary" style="width:auto;" onchange="updateMovieBranch('${m.id}', this.value)">
+          ${branches.map(b => `<option value="${b.id}" ${m.branch === b.id ? 'selected' : ''}>${escapeHtml(b.name)}</option>`).join('')}
+        </select>
+        <button class="btn small secondary" onclick="openEditMovie('${m.id}')">Hariri</button>
+        <button class="btn small danger" onclick="deleteMovie('${m.id}')">Futa</button>
+      </div>
+      <div id="editBox-${m.id}" style="display:${openEditIds[m.id] ? 'block' : 'none'};margin-top:10px;border-top:1px solid var(--rule);padding-top:10px;">
+        <label>Jina la Movie</label>
+        <input type="text" id="editTitle-${m.id}" value="${escapeHtml(m.title)}">
+        <label>Maelezo</label>
+        <textarea id="editDesc-${m.id}">${escapeHtml(m.description || '')}</textarea>
+        <label>Picha Mpya (hiari - ukiacha wazi picha ya zamani inabaki)</label>
+        <input type="file" id="editImage-${m.id}" accept="image/*">
+        <label>Link ya Trailer (YouTube - Unlisted)</label>
+        <input type="text" id="editTrailer-${m.id}" value="${m.trailerId ? 'https://youtu.be/' + m.trailerId : ''}" placeholder="mfano: https://youtube.com/watch?v=ABC123XYZ">
+        <button class="btn small" onclick="saveEditMovie('${m.id}')">Hifadhi Mabadiliko</button>
+        <button class="btn small secondary" onclick="openEditMovie('${m.id}')">Ghairi</button>
+      </div>
+      ${renderAdminCommentsBlock(m.id)}
+    </div>`;
+  }).join('');
+}
+
+function renderAdminCommentsBlock(movieId) {
+  const isOpen = !!openAdminComments[movieId];
+  const comments = openAdminComments[movieId] || [];
+  return `
+    <button class="comments-admin-toggle" onclick="toggleAdminComments('${movieId}')">${isOpen ? 'Ficha Maoni' : 'Ona Maoni ya Wateja'}</button>
+    <div class="comments-admin-section ${isOpen ? 'open' : ''}">
+      ${comments.length === 0 ? '<div style="color:var(--muted);font-size:12px;">Bado hakuna maoni.</div>' : ''}
+      ${comments.map(c => `
+        <div class="comment-admin-item ${c.isAdmin ? 'admin-reply' : ''}">
+          <div>
+            <span class="c-author">${c.isAdmin ? '\u2605 Wewe (Admin)' : escapeHtml(c.userName || 'Mteja')}</span>
+            <div>${escapeHtml(c.text)}</div>
+          </div>
+          <button class="icon-btn del" onclick="deleteComment('${movieId}', '${c.id}')">\u2715</button>
+        </div>
+      `).join('')}
+      <div class="comment-reply-row">
+        <input type="text" id="adminReplyInput-${movieId}" placeholder="Jibu kama Admin...">
+        <button class="btn small" onclick="submitAdminReply('${movieId}')">Tuma</button>
+      </div>
+    </div>
+  `;
+}
+
+window.toggleAdminComments = (movieId) => {
+  if (openAdminComments[movieId]) {
+    delete openAdminComments[movieId];
+    if (adminCommentUnsub[movieId]) { adminCommentUnsub[movieId](); delete adminCommentUnsub[movieId]; }
+    renderMovies(latestMovies);
+    return;
+  }
+  openAdminComments[movieId] = [];
+  const q = query(collection(db, 'movies', movieId, 'comments'), orderBy('createdAt', 'asc'));
+  adminCommentUnsub[movieId] = onSnapshot(q, (snap) => {
+    const arr = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    openAdminComments[movieId] = arr;
+    renderMovies(latestMovies);
+  });
+  renderMovies(latestMovies);
+};
+
+window.submitAdminReply = async (movieId) => {
+  const input = document.getElementById('adminReplyInput-' + movieId);
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  await addDoc(collection(db, 'movies', movieId, 'comments'), {
+    text, uid: auth.currentUser.uid, userName: 'Reelzone', isAdmin: true, createdAt: serverTimestamp()
+  });
+};
+
+window.deleteComment = async (movieId, commentId) => {
+  if (!confirm('Futa maoni haya?')) return;
+  await deleteDoc(doc(db, 'movies', movieId, 'comments', commentId));
+};
+
+window.updateMovieCategory = async (id, category) => {
+  await updateDoc(doc(db, 'movies', id), { category });
+};
+
+window.updateMovieBranch = async (id, branch) => {
+  await updateDoc(doc(db, 'movies', id), { branch });
+};
+
+let openEditIds = {};
+window.openEditMovie = (id) => {
+  openEditIds[id] = !openEditIds[id];
+  const box = document.getElementById('editBox-' + id);
+  if (box) box.style.display = openEditIds[id] ? 'block' : 'none';
+};
+
+window.saveEditMovie = async (id) => {
+  const title = document.getElementById('editTitle-' + id).value.trim();
+  const description = document.getElementById('editDesc-' + id).value.trim();
+  const imageFile = document.getElementById('editImage-' + id).files[0];
+  const trailerInput = document.getElementById('editTrailer-' + id).value.trim();
+  if (!title) return alert('Jina la movie haliwezi kuwa tupu.');
+  const trailerId = extractYouTubeId(trailerInput);
+  if (trailerInput && !trailerId) {
+    return alert('Link ya YouTube haieleweki. Hakikisha umebandika link kamili kutoka YouTube.');
+  }
+  const updates = { title, description, trailerId: trailerId || '' };
+  if (imageFile) {
+    try {
+      updates.imageUrl = await uploadToCloudinary(imageFile);
+    } catch (e) {
+      return alert('Imeshindwa kupakia picha: ' + e.message);
+    }
+  }
+  try {
+    await updateDoc(doc(db, 'movies', id), updates);
+  } catch (e) {
+    return alert('Imeshindwa kuhifadhi: ' + e.message);
+  }
+  openEditIds[id] = false;
+  alert('Mabadiliko yamehifadhiwa.');
+};
+
+document.getElementById('mBulkAddBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('mBulkAddBtn');
+  const raw = document.getElementById('mBulkTitles').value;
+  const category = document.getElementById('mBulkCategory').value;
+  const branch = document.getElementById('mBulkBranch').value;
+  const titles = raw.split('\n').map(t => t.trim()).filter(t => t.length > 0);
+  if (titles.length === 0) return alert('Bandika angalau jina moja la movie.');
+  if (!branch) return alert('Chagua Ofisi kwanza (nenda tab "Ofisi" kama bado hujaongeza).');
+
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = `Inaongeza ${titles.length}...`;
+
+  try {
+    for (const title of titles) {
+      await addDoc(collection(db, 'movies'), {
+        title, category, branch, status: 'ipo', description: '', imageUrl: '', trailerId: '',
+        likes: 0, createdAt: serverTimestamp()
+      });
+    }
+    document.getElementById('mBulkTitles').value = '';
+    alert(`Movie ${titles.length} zimeongezwa. Sasa unaweza kuhariri kila moja (kuongeza picha/trailer) kwenye orodha chini.`);
+  } catch (e) {
+    alert('Imeshindwa: ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = originalText;
+});
+
+document.getElementById('mAddBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('mAddBtn');
+  const title = document.getElementById('mTitle').value.trim();
+  const category = document.getElementById('mCategory').value;
+  const branch = document.getElementById('mBranch').value;
+  const status = document.getElementById('mStatus').value;
+  const description = document.getElementById('mDesc').value.trim();
+  const imageFile = document.getElementById('mImage').files[0];
+  const trailerInput = document.getElementById('mTrailer').value.trim();
+  const trailerId = extractYouTubeId(trailerInput);
+  if (!title) return alert('Weka jina la movie kwanza.');
+  if (!branch) return alert('Chagua Ofisi kwanza (nenda tab "Ofisi" kama bado hujaongeza).');
+  if (trailerInput && !trailerId) {
+    return alert('Link ya YouTube haieleweki. Hakikisha umebandika link kamili kutoka YouTube.');
+  }
+
+  const originalText = btn.textContent;
+  btn.disabled = true;
+
+  let imageUrl = '';
+  if (imageFile) {
+    try {
+      btn.textContent = 'Inapakia Picha...';
+      imageUrl = await uploadToCloudinary(imageFile);
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      return alert(e.message);
+    }
+  }
+
+  try {
+    btn.textContent = 'Inahifadhi...';
+    await addDoc(collection(db, 'movies'), {
+      title, category, branch, status, description, imageUrl, trailerId: trailerId || '',
+      likes: 0, createdAt: serverTimestamp()
+    });
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    return alert('Imeshindwa kuhifadhi: ' + e.message);
+  }
+
+  document.getElementById('mTitle').value = '';
+  document.getElementById('mDesc').value = '';
+  document.getElementById('mImage').value = '';
+  document.getElementById('mTrailer').value = '';
+  btn.disabled = false;
+  btn.textContent = originalText;
+});
+
+function extractYouTubeId(url) {
+  if (!url) return '';
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/
+  ];
+  for (const p of patterns) {
+    const match = url.match(p);
+    if (match) return match[1];
+  }
+  return '';
+}
+
+window.updateMovieStatus = async (id, status) => {
+  await updateDoc(doc(db, 'movies', id), { status });
+};
+
+window.deleteMovie = async (id) => {
+  if (!confirm('Futa movie hii?')) return;
+  await deleteDoc(doc(db, 'movies', id));
+};
+
+// ---- PRODUCTS ----
+function listenProducts() {
+  const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snap) => {
+    const products = [];
+    snap.forEach(d => products.push({ id: d.id, ...d.data() }));
+    renderProducts(products);
+  });
+}
+
+function renderProducts(products) {
+  document.getElementById('productCount').textContent = products.length + ' BIDHAA KWENYE MFUMO';
+  const list = document.getElementById('productList');
+  if (products.length === 0) {
+    list.innerHTML = '<div class="empty">Bado hujaongeza bidhaa yoyote.</div>';
+    return;
+  }
+  list.innerHTML = products.map(p => `
+    <div class="card">
+      ${p.imageUrl ? `<img class="thumb" src="${p.imageUrl}">` : ''}
+      <div class="card-top">
+        <div>
+          <div class="card-title">${escapeHtml(p.name)}</div>
+          <div class="card-meta">TZS ${Number(p.price).toLocaleString()}</div>
+        </div>
+      </div>
+      ${p.description ? `<div class="card-desc">${escapeHtml(p.description)}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn small danger" onclick="deleteProduct('${p.id}')">Futa</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('pAddBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('pAddBtn');
+  const name = document.getElementById('pName').value.trim();
+  const price = document.getElementById('pPrice').value;
+  const description = document.getElementById('pDesc').value.trim();
+  const imageFile = document.getElementById('pImage').files[0];
+  if (!name || !price) return alert('Jaza jina na bei.');
+
+  const originalText = btn.textContent;
+  btn.disabled = true;
+
+  let imageUrl = '';
+  if (imageFile) {
+    try {
+      btn.textContent = 'Inapakia Picha...';
+      imageUrl = await uploadToCloudinary(imageFile);
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      return alert(e.message);
+    }
+  }
+
+  try {
+    btn.textContent = 'Inahifadhi...';
+    await addDoc(collection(db, 'products'), {
+      name, price: Number(price), description, imageUrl, createdAt: serverTimestamp()
+    });
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    return alert('Imeshindwa kuhifadhi: ' + e.message);
+  }
+
+  document.getElementById('pName').value = '';
+  document.getElementById('pPrice').value = '';
+  document.getElementById('pDesc').value = '';
+  document.getElementById('pImage').value = '';
+  btn.disabled = false;
+  btn.textContent = originalText;
+});
+
+window.deleteProduct = async (id) => {
+  if (!confirm('Futa bidhaa hii?')) return;
+  await deleteDoc(doc(db, 'products', id));
+};
+
+// ---- ANNOUNCEMENTS (TANGAZO) ----
+function listenAds() {
+  const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snap) => {
+    const ads = [];
+    snap.forEach(d => ads.push({ id: d.id, ...d.data() }));
+    renderAds(ads);
+  });
+}
+
+function renderAds(ads) {
+  document.getElementById('adCount').textContent = ads.length + ' TANGAZO KWENYE MFUMO';
+  const list = document.getElementById('adList');
+  if (ads.length === 0) {
+    list.innerHTML = '<div class="empty">Bado hakuna tangazo.</div>';
+    return;
+  }
+  list.innerHTML = ads.map(a => `
+    <div class="card">
+      ${a.imageUrl ? `<img class="thumb" src="${a.imageUrl}">` : ''}
+      ${a.text ? `<div class="card-desc">${escapeHtml(a.text)}</div>` : ''}
+      <div class="card-meta" style="margin-top:6px;">${a.type === 'image' ? 'Tangazo la Picha' : a.type === 'emergency' ? '\u26A0\uFE0F Tangazo la Dharura' : 'Tangazo la Maandishi'}</div>
+      <div class="card-actions">
+        <button class="btn small danger" onclick="deleteAd('${a.id}')">Futa</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('adImageBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('adImageBtn');
+  const imageFile = document.getElementById('adImage').files[0];
+  const caption = document.getElementById('adImageCaption').value.trim();
+  if (!imageFile) return alert('Chagua picha kwanza.');
+
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Inapakia Picha...';
+  let imageUrl = '';
+  try {
+    imageUrl = await uploadToCloudinary(imageFile);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    return alert(e.message);
+  }
+
+  btn.textContent = 'Inahifadhi...';
+  await addDoc(collection(db, 'announcements'), {
+    type: 'image', imageUrl, text: caption, createdAt: serverTimestamp()
+  });
+
+  document.getElementById('adImage').value = '';
+  document.getElementById('adImageCaption').value = '';
+  btn.disabled = false;
+  btn.textContent = originalText;
+});
+
+document.getElementById('adTextBtn').addEventListener('click', async () => {
+  const textEl = document.getElementById('adText');
+  const text = textEl.value.trim();
+  if (!text) return alert('Andika maandishi ya tangazo kwanza.');
+  await addDoc(collection(db, 'announcements'), {
+    type: 'text', text, imageUrl: '', createdAt: serverTimestamp()
+  });
+  textEl.value = '';
+});
+
+document.getElementById('adEmergencyBtn').addEventListener('click', async () => {
+  const textEl = document.getElementById('adEmergency');
+  const text = textEl.value.trim();
+  if (!text) return alert('Andika maandishi ya tangazo la dharura kwanza.');
+  await addDoc(collection(db, 'announcements'), {
+    type: 'emergency', text, imageUrl: '', createdAt: serverTimestamp()
+  });
+  textEl.value = '';
+});
+
+window.deleteAd = async (id) => {
+  if (!confirm('Futa tangazo hili?')) return;
+  await deleteDoc(doc(db, 'announcements', id));
+};
+
+// ---- USERS (ban/unban) ----
+function listenUsers() {
+  const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snap) => {
+    const users = [];
+    snap.forEach(d => users.push({ id: d.id, ...d.data() }));
+    renderUsers(users);
+  });
+}
+
+function renderUsers(users) {
+  document.getElementById('userCount').textContent = users.length + ' WATEJA WALIOJISAJILI';
+  const list = document.getElementById('userAdminList');
+  if (users.length === 0) {
+    list.innerHTML = '<div class="empty">Bado hakuna mteja aliyejisajili.</div>';
+    return;
+  }
+  list.innerHTML = users.map(u => `
+    <div class="card">
+      <div class="card-top">
+        <div style="display:flex;gap:10px;align-items:center;">
+          ${u.photoUrl ? `<img class="profile-thumb" src="${u.photoUrl}">` : `<div class="profile-thumb" style="display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--gold);font-weight:bold;">${escapeHtml((u.name || '?').charAt(0).toUpperCase())}</div>`}
+          <div>
+            <div class="card-title">${escapeHtml(u.name || 'Bila jina')}</div>
+            <div class="card-meta">${escapeHtml(u.email || '')}</div>
+          </div>
+        </div>
+        <span class="stamp ${u.banned ? 'bado' : 'ipo'}">${u.banned ? 'AMEFUNGWA' : 'AKTIVU'}</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn small ${u.banned ? '' : 'danger'}" onclick="toggleBan('${u.id}', ${!u.banned})">
+          ${u.banned ? 'Mfungue' : 'Mfunge'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.toggleBan = async (id, ban) => {
+  await updateDoc(doc(db, 'users', id), { banned: ban });
+};
+
+// ---- CHAT (Admin anaongea na Wateja) ----
+let chatThreads = [];
+let activeChatUid = null;
+let activeChatUnsub = null;
+
+function listenChatThreads() {
+  const q = query(collection(db, 'chats'), orderBy('lastAt', 'desc'));
+  onSnapshot(q, (snap) => {
+    chatThreads = [];
+    snap.forEach(d => chatThreads.push({ id: d.id, ...d.data() }));
+    renderChatThreads();
+  });
+}
+
+function renderChatThreads() {
+  const holder = document.getElementById('chatThreadsList');
+  if (chatThreads.length === 0) {
+    holder.innerHTML = '<div class="empty">Bado hakuna mazungumzo na wateja.</div>';
+    return;
+  }
+  holder.innerHTML = chatThreads.map(t => `
+    <div class="thread-item" onclick="openChatThread('${t.id}', '${escapeHtml(t.userName || 'Mteja').replace(/'/g, "\\'")}')">
+      <div>
+        <div class="thread-name">${escapeHtml(t.userName || 'Mteja')}</div>
+        <div class="thread-last">${escapeHtml(t.lastMessage || '')}</div>
+      </div>
+      <span style="color:var(--gold);font-size:18px;">&rsaquo;</span>
+    </div>
+  `).join('');
+}
+
+window.openChatThread = (uid, name) => {
+  activeChatUid = uid;
+  document.getElementById('chatThreadsList').style.display = 'none';
+  document.getElementById('chatConversation').style.display = 'block';
+  document.getElementById('chatConvName').textContent = name;
+
+  if (activeChatUnsub) activeChatUnsub();
+  const q = query(collection(db, 'chats', uid, 'messages'), orderBy('createdAt', 'asc'));
+  activeChatUnsub = onSnapshot(q, (snap) => {
+    const msgs = [];
+    snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
+    const holder = document.getElementById('chatConvMessages');
+    holder.innerHTML = msgs.map(m => `
+      <div class="chat-bubble ${m.sender === 'admin' ? 'admin' : 'user'}">${escapeHtml(m.text)}</div>
+    `).join('');
+    holder.scrollTop = holder.scrollHeight;
+  });
+};
+
+document.getElementById('chatBackBtn').addEventListener('click', () => {
+  if (activeChatUnsub) { activeChatUnsub(); activeChatUnsub = null; }
+  activeChatUid = null;
+  document.getElementById('chatThreadsList').style.display = 'block';
+  document.getElementById('chatConversation').style.display = 'none';
+});
+
+async function sendAdminReply() {
+  const input = document.getElementById('chatConvInput');
+  const text = input.value.trim();
+  if (!text || !activeChatUid) return;
+  input.value = '';
+  await addDoc(collection(db, 'chats', activeChatUid, 'messages'), {
+    text, sender: 'admin', createdAt: serverTimestamp()
+  });
+  await setDoc(doc(db, 'chats', activeChatUid), {
+    lastMessage: '\u2605 ' + text, lastAt: serverTimestamp()
+  }, { merge: true });
+}
+document.getElementById('chatConvSendBtn').addEventListener('click', sendAdminReply);
+document.getElementById('chatConvInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendAdminReply();
+});
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
